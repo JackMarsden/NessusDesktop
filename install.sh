@@ -1,17 +1,26 @@
 #!/bin/bash
 # install.sh
-# This script checks for Nessus and required dependencies (including zenity),
+# This script checks for Nessus and required dependencies (including zenity and gio),
 # prompts for the user's desktop path (defaulting to $HOME/Desktop),
 # creates a custom directory in /opt for shell scripts,
 # copies all .sh files to that custom directory,
 # updates the Exec lines in all .desktop files (replacing {SCRIPTS_DIR} with /opt/nessusdesktop),
-# and copies the updated .desktop files to the user's desktop.
-# Finally, it sets appropriate file permissions.
+# copies the updated .desktop files to the user's desktop,
+# marks them as trusted (secure) using gio if available,
+# sets appropriate file permissions,
+# and manages versioning by creating and comparing a version file.
 
 # Function to check if a command exists
 command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
+
+# --- Define Version Number ---
+CURRENT_VERSION="v1.0"
+
+# --- Define Scripts Directory ---
+SCRIPTS_DIR="/opt/nessusdesktop"
+VERSION_FILE="$SCRIPTS_DIR/version.txt"
 
 # --- Check for Nessus ---
 if ! ( command_exists nessusd || [ -x "/opt/nessus/sbin/nessusd" ] ); then
@@ -26,8 +35,8 @@ if ! ( command_exists nessusd || [ -x "/opt/nessus/sbin/nessusd" ] ); then
     fi
 fi
 
-# --- Check for required dependencies ---
-dependencies=(sed chmod find zenity)
+# --- Check for Required Dependencies ---
+dependencies=(sed chmod find zenity gio)
 for dep in "${dependencies[@]}"; do
     if ! command_exists "$dep"; then
         echo "Dependency '$dep' is not installed."
@@ -57,31 +66,54 @@ if [ ! -d "$DESKTOP_PATH" ]; then
     exit 1
 fi
 
-# --- Create custom directory for shell scripts ---
-SCRIPTS_DIR="/opt/nessusdesktop"
-if [ ! -d "$SCRIPTS_DIR" ]; then
-    echo "Creating custom directory for shell scripts: $SCRIPTS_DIR"
-    sudo mkdir -p "$SCRIPTS_DIR"
+# --- Check for Existing Installation ---
+if [ -f "$VERSION_FILE" ]; then
+    INSTALLED_VERSION=$(cat "$VERSION_FILE")
+    echo "An existing installation is detected with version: $INSTALLED_VERSION"
+    echo "Current version is: $CURRENT_VERSION"
+    read -p "Do you want to overwrite the existing installation? (y/n): " overwrite
+    if [[ "$overwrite" == "y" || "$overwrite" == "Y" ]]; then
+        echo "Overwriting existing installation..."
+        sudo rm -rf "$SCRIPTS_DIR"
+    else
+        echo "Installation canceled."
+        exit 0
+    fi
+else
+    echo "No existing installation found."
 fi
 
-# --- Copy .sh files to custom directory ---
+# --- Create Scripts Directory ---
+echo "Creating directory: $SCRIPTS_DIR"
+sudo mkdir -p "$SCRIPTS_DIR"
+
+# --- Copy .sh Files to Scripts Directory ---
 echo "Copying shell scripts to $SCRIPTS_DIR..."
 find . -type f -name "*.sh" -exec sudo cp {} "$SCRIPTS_DIR" \;
 sudo find "$SCRIPTS_DIR" -type f -name "*.sh" -exec chmod 755 {} \;
 
-# --- Process .desktop files ---
-# Replace the placeholder {SCRIPTS_DIR} with the custom directory in the Exec line,
-# then copy the updated .desktop file to the user's desktop.
+# --- Process .desktop Files ---
 echo "Processing .desktop files..."
 while IFS= read -r -d '' desktop_file; do
     filename=$(basename "$desktop_file")
+    # Replace {SCRIPTS_DIR} placeholder with the scripts directory
     sed "s|{SCRIPTS_DIR}|$SCRIPTS_DIR|g" "$desktop_file" > "$DESKTOP_PATH/$filename"
+    
+    # Mark the .desktop file as trusted using gio
+    if command_exists gio; then
+        gio set -t boolean "$DESKTOP_PATH/$filename" metadata::trusted true
+    else
+        echo "gio command not found. Skipping setting trust for $filename."
+    fi
 done < <(find . -type f -name "*.desktop" -print0)
 
-# --- Set permissions for the copied .desktop files ---
-echo "Setting permissions for the desktop files..."
+# --- Set Permissions for Desktop Files ---
+echo "Setting permissions for desktop files..."
 find "$DESKTOP_PATH" -maxdepth 1 -type f -name "*.desktop" -exec chmod 755 {} \;
 
+# --- Create Version File ---
+echo "$CURRENT_VERSION" | sudo tee "$VERSION_FILE" > /dev/null
+
 echo "Installation complete."
-echo ".desktop files have been copied to: $DESKTOP_PATH"
+echo "Desktop files have been copied to: $DESKTOP_PATH"
 echo "Shell scripts have been copied to: $SCRIPTS_DIR"
