@@ -4,4 +4,4 @@ Type=Application
 Terminal=trye
 Name=Stop-Nessus
 Icon=security-low-symbolic
-Exec=/path/here
+Exec=/opt/nessusdesktop/.stop.sh
