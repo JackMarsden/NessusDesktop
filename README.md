@@ -1,6 +1,6 @@
 # NessusDesktop
 
-NessusDesktop is a utility designed to simplify the management of the Nessus vulnerability scanner's service on Linux systems. It provides convenient scripts to start and stop the Nessus service, streamlining the process of initiating vulnerability scans.
+NessusDesktop is a utility designed to simplify the management of the Nessus vulnerability scanner's service on GUI based Linux systems. It provides convenient scripts to start and stop the Nessus service, streamlining the process of initiating vulnerability scans.
 
 ## Features
 
