@@ -4,8 +4,7 @@
 # prompts for the user's desktop path (defaulting to $HOME/Desktop),
 # creates a custom directory in /opt for shell scripts,
 # copies all .sh files to that custom directory,
-# updates the Exec lines in all .desktop files (replacing {SCRIPTS_DIR} with /opt/nessusdesktop),
-# copies the updated .desktop files to the user's desktop,
+# copies the .desktop files to the user's desktop,
 # marks them as trusted (secure) using gio if available,
 # sets appropriate file permissions,
 # and manages versioning by creating and comparing a version file.
