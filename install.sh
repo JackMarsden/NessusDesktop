@@ -89,7 +89,7 @@ sudo mkdir -p "$SCRIPTS_DIR"
 
 # --- Copy .sh Files to Scripts Directory ---
 echo "Copying shell scripts to $SCRIPTS_DIR..."
-find . -type f -name "*.sh" -exec sudo cp {} "$SCRIPTS_DIR" \;
+find . -type f -name "*.sh" ! -name "install.sh" -exec sudo cp {} "$SCRIPTS_DIR" \;
 sudo find "$SCRIPTS_DIR" -type f -name "*.sh" -exec chmod 755 {} \;
 
 # --- Process .desktop Files ---
