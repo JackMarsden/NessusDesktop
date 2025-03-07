@@ -35,3 +35,7 @@ NessusDesktop is a utility designed to simplify the management of the Nessus vul
 - **Prompt for confirmation** if the `/opt/nessusdesktop` directory already exists, offering options to overwrite or cancel the installation.
 - **Copy necessary management scripts** to the `/opt/nessusdesktop` directory, excluding the `install.sh` script itself.
 - **Set appropriate permissions** for the copied scripts to ensure they are executable.
+- 
+## Usage
+
+After installation, you can start or stop the Nessus service using the desktop shortcuts.
