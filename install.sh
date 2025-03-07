@@ -101,7 +101,7 @@ while IFS= read -r -d '' desktop_file; do
     
     # Mark the .desktop file as trusted using gio
     if command_exists gio; then
-        gio set -t boolean "$DESKTOP_PATH/$filename" metadata::trusted true
+        gio set -t boolean "$DESKTOP_PATH/$filename" metadata::trusted true 2>/dev/null
     else
         echo "gio command not found. Skipping setting trust for $filename."
     fi
