@@ -10,12 +10,13 @@ command_exists() {
 }
 
 # --- Check for Nessus ---
-if ! command_exists nessusd; then
+# Check if 'nessusd' exists in PATH or in the typical installation directory.
+if ! ( command_exists nessusd || [ -x "/opt/nessus/sbin/nessusd" ] ); then
     echo "Nessus does not appear to be installed."
     read -p "Would you like to install Nessus? (y/n): " install_nessus
     if [[ "$install_nessus" == "y" || "$install_nessus" == "Y" ]]; then
         echo "Please install Nessus manually from https://www.tenable.com/products/nessus/nessus-download"
-        # Alternatively, add automatic installation steps if applicable.
+        exit 1
     else
         echo "Nessus is required. Exiting installation."
         exit 1
