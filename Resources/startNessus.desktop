@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=trye
+Name=Start-Nessus
+Icon=security-high
+Exec=/path/here
+  
