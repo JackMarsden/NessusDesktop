@@ -4,5 +4,5 @@ Type=Application
 Terminal=trye
 Name=Start-Nessus
 Icon=security-high
-Exec=/path/here
+Exec=/opt/nessusdesktop/.start.sh
   
