@@ -28,7 +28,7 @@ NessusDesktop is a utility designed to simplify the management of the Nessus vul
 3. **Run the Installation Script:**
 
    ```bash
-   sudo bash ./install.sh
+   bash ./install.sh
    ```
    **The script will:**
 
