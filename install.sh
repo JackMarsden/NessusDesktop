@@ -1,7 +1,8 @@
 #!/bin/bash
 # install.sh
 # This script checks for Nessus and required dependencies (including zenity),
-# prompts for the user's desktop path, adjusts the Exec paths in all .desktop files,
+# prompts for the user's desktop path (pre-filled with $HOME/Desktop),
+# adjusts the Exec paths in all .desktop files,
 # and sets appropriate CHMOD permissions.
 
 # Function to check if a command exists
@@ -47,7 +48,10 @@ for dep in "${dependencies[@]}"; do
 done
 
 # --- Prompt for Desktop Path ---
-read -p "Enter the full path to your desktop: " DESKTOP_PATH
+# Pre-fill the prompt with the default desktop path
+DEFAULT_DESKTOP="${HOME}/Desktop"
+read -e -p "Enter the full path to your desktop [${DEFAULT_DESKTOP}]: " -i "${DEFAULT_DESKTOP}" DESKTOP_PATH
+DESKTOP_PATH=${DESKTOP_PATH:-${DEFAULT_DESKTOP}}
 if [ ! -d "$DESKTOP_PATH" ]; then
     echo "The provided path does not exist or is not a directory. Exiting."
     exit 1
