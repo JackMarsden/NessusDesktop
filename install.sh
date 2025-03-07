@@ -1,9 +1,10 @@
 #!/bin/bash
 # install.sh
 # This script checks for Nessus and required dependencies (including zenity),
-# prompts for the user's desktop path (pre-filled with $HOME/Desktop),
-# adjusts the Exec paths in all .desktop files,
-# and sets appropriate CHMOD permissions.
+# prompts for the user's desktop path (defaulting to $HOME/Desktop),
+# updates the Exec lines in all .desktop files (replacing {DESKTOP_PATH} with the chosen path),
+# copies the updated .desktop files to that desktop,
+# and sets appropriate file permissions.
 
 # Function to check if a command exists
 command_exists() {
@@ -11,7 +12,7 @@ command_exists() {
 }
 
 # --- Check for Nessus ---
-# Check if 'nessusd' exists in PATH or in the typical installation directory.
+# Verify if 'nessusd' is in PATH or exists in the typical installation directory.
 if ! ( command_exists nessusd || [ -x "/opt/nessus/sbin/nessusd" ] ); then
     echo "Nessus does not appear to be installed."
     read -p "Would you like to install Nessus? (y/n): " install_nessus
@@ -48,7 +49,6 @@ for dep in "${dependencies[@]}"; do
 done
 
 # --- Prompt for Desktop Path ---
-# Pre-fill the prompt with the default desktop path
 DEFAULT_DESKTOP="${HOME}/Desktop"
 read -e -p "Enter the full path to your desktop [${DEFAULT_DESKTOP}]: " -i "${DEFAULT_DESKTOP}" DESKTOP_PATH
 DESKTOP_PATH=${DESKTOP_PATH:-${DEFAULT_DESKTOP}}
@@ -57,23 +57,16 @@ if [ ! -d "$DESKTOP_PATH" ]; then
     exit 1
 fi
 
-# --- Adjust Exec paths in .desktop files ---
-# Assumes the .desktop files contain a placeholder '{DESKTOP_PATH}' within their Exec lines.
-echo "Updating .desktop files with your desktop path..."
+# --- Process and copy .desktop files ---
+# For each .desktop file, update its Exec line (replacing {DESKTOP_PATH} with the provided path)
+# and then copy the updated file to the user's desktop.
+echo "Processing .desktop files..."
 while IFS= read -r -d '' desktop_file; do
-    # Create a backup of the original file
-    cp "$desktop_file" "$desktop_file.bak"
-    # Replace the placeholder with the provided desktop path
-    sed -i "s|{DESKTOP_PATH}|$DESKTOP_PATH|g" "$desktop_file"
+    filename=$(basename "$desktop_file")
+    # Update the Exec parameter by replacing the placeholder {DESKTOP_PATH}
+    sed "s|{DESKTOP_PATH}|$DESKTOP_PATH|g" "$desktop_file" > "$DESKTOP_PATH/$filename"
 done < <(find . -type f -name "*.desktop" -print0)
 
 # --- Set appropriate file permissions ---
 echo "Setting file permissions..."
-# Make .desktop files executable (755)
-find . -type f -name "*.desktop" -exec chmod 755 {} \;
-# Make shell scripts executable (755)
-find . -type f -name "*.sh" -exec chmod 755 {} \;
-# (Optional) Set all other regular files to 644 if needed:
-# find . -type f ! -name "*.sh" ! -name "*.desktop" -exec chmod 644 {} \;
-
-echo "Installation complete."
+# Make the copied .des
