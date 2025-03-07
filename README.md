@@ -1,5 +1,5 @@
-# NessusDesktop
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+# NessusDesktop - ![Version](https://img.shields.io/badge/version-1.0.0-blue)
+
 NessusDesktop is a utility designed to simplify the management of the Nessus vulnerability scanner's service on GUI based Linux systems. It provides convenient scripts to start and stop the Nessus service, streamlining the process of initiating vulnerability scans.
 
 ## Features
