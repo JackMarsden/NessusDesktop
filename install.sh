@@ -2,9 +2,11 @@
 # install.sh
 # This script checks for Nessus and required dependencies (including zenity),
 # prompts for the user's desktop path (defaulting to $HOME/Desktop),
-# updates the Exec lines in all .desktop files (replacing {DESKTOP_PATH} with the chosen path),
-# copies the updated .desktop files to that desktop,
-# and sets appropriate file permissions.
+# creates a custom directory in /opt for shell scripts,
+# copies all .sh files to that custom directory,
+# updates the Exec lines in all .desktop files (replacing {SCRIPTS_DIR} with /opt/nessusdesktop),
+# and copies the updated .desktop files to the user's desktop.
+# Finally, it sets appropriate file permissions.
 
 # Function to check if a command exists
 command_exists() {
@@ -12,7 +14,6 @@ command_exists() {
 }
 
 # --- Check for Nessus ---
-# Verify if 'nessusd' is in PATH or exists in the typical installation directory.
 if ! ( command_exists nessusd || [ -x "/opt/nessus/sbin/nessusd" ] ); then
     echo "Nessus does not appear to be installed."
     read -p "Would you like to install Nessus? (y/n): " install_nessus
@@ -26,7 +27,6 @@ if ! ( command_exists nessusd || [ -x "/opt/nessus/sbin/nessusd" ] ); then
 fi
 
 # --- Check for required dependencies ---
-# List of dependencies used in the repository's shell scripts.
 dependencies=(sed chmod find zenity)
 for dep in "${dependencies[@]}"; do
     if ! command_exists "$dep"; then
@@ -57,16 +57,31 @@ if [ ! -d "$DESKTOP_PATH" ]; then
     exit 1
 fi
 
-# --- Process and copy .desktop files ---
-# For each .desktop file, update its Exec line (replacing {DESKTOP_PATH} with the provided path)
-# and then copy the updated file to the user's desktop.
+# --- Create custom directory for shell scripts ---
+SCRIPTS_DIR="/opt/nessusdesktop"
+if [ ! -d "$SCRIPTS_DIR" ]; then
+    echo "Creating custom directory for shell scripts: $SCRIPTS_DIR"
+    sudo mkdir -p "$SCRIPTS_DIR"
+fi
+
+# --- Copy .sh files to custom directory ---
+echo "Copying shell scripts to $SCRIPTS_DIR..."
+find . -type f -name "*.sh" -exec sudo cp {} "$SCRIPTS_DIR" \;
+sudo find "$SCRIPTS_DIR" -type f -name "*.sh" -exec chmod 755 {} \;
+
+# --- Process .desktop files ---
+# Replace the placeholder {SCRIPTS_DIR} with the custom directory in the Exec line,
+# then copy the updated .desktop file to the user's desktop.
 echo "Processing .desktop files..."
 while IFS= read -r -d '' desktop_file; do
     filename=$(basename "$desktop_file")
-    # Update the Exec parameter by replacing the placeholder {DESKTOP_PATH}
-    sed "s|{DESKTOP_PATH}|$DESKTOP_PATH|g" "$desktop_file" > "$DESKTOP_PATH/$filename"
+    sed "s|{SCRIPTS_DIR}|$SCRIPTS_DIR|g" "$desktop_file" > "$DESKTOP_PATH/$filename"
 done < <(find . -type f -name "*.desktop" -print0)
 
-# --- Set appropriate file permissions ---
-echo "Setting file permissions..."
-# Make the copied .des
+# --- Set permissions for the copied .desktop files ---
+echo "Setting permissions for the desktop files..."
+find "$DESKTOP_PATH" -maxdepth 1 -type f -name "*.desktop" -exec chmod 755 {} \;
+
+echo "Installation complete."
+echo ".desktop files have been copied to: $DESKTOP_PATH"
+echo "Shell scripts have been copied to: $SCRIPTS_DIR"
