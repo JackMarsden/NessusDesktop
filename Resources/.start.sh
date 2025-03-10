@@ -26,8 +26,9 @@ fi
  
 # Use the password securely to start Nessus, suppressing output
 echo "$PASSWORD" | sudo -S systemctl start nessusd >/dev/null 2>&1
- 
-# Clear the password from memory immediately
+
+# Overwrite the PASSWORD variable with zeros to clear its content from memory
+PASSWORD=$(printf "%0.s0" $(seq 1 ${#PASSWORD}))
 unset PASSWORD
  
 # Check if the service started successfully
