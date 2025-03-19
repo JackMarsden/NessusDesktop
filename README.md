@@ -10,7 +10,7 @@ NessusDesktop is a utility designed to simplify the management of the Nessus vul
 ## Prerequisites
 
 - A Linux-based operating system (e.g., Ubuntu, CentOS, Debian).
-  - Testing on Kali Linux
+  - Tested on Kali Linux
 - sudo privileges to manage system services.
 - An installed instance of Tenable's Nessus vulnerability scanner.
 
