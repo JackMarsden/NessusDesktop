@@ -15,7 +15,7 @@ command_exists() {
 }
 
 # --- Define Version Number ---
-CURRENT_VERSION="v1.0.1"
+CURRENT_VERSION="v1.0.2"
 
 # --- Define Scripts Directory ---
 SCRIPTS_DIR="/opt/nessusdesktop"
@@ -91,6 +91,10 @@ echo "Copying shell scripts to $SCRIPTS_DIR..."
 find . -type f -name "*.sh" ! -name "install.sh" -exec sudo cp {} "$SCRIPTS_DIR" \;
 sudo find "$SCRIPTS_DIR" -type f -name "*.sh" -exec chmod 755 {} \;
 
+# --- Define Applications Directory ---
+APPLICATIONS_PATH="$(dirname "$DESKTOP_PATH")/.local/share/applications"
+mkdir -p "$APPLICATIONS_PATH"
+
 # --- Process .desktop Files ---
 echo "Processing .desktop files..."
 while IFS= read -r -d '' desktop_file; do
@@ -98,6 +102,9 @@ while IFS= read -r -d '' desktop_file; do
     # Replace {SCRIPTS_DIR} placeholder with the scripts directory
     sed "s|{SCRIPTS_DIR}|$SCRIPTS_DIR|g" "$desktop_file" > "$DESKTOP_PATH/$filename"
     
+    # Copy files to application directory
+    cp "$DESKTOP_PATH/$filename" "$APPLICATIONS_PATH/$filename"
+
     # Mark the .desktop file as trusted using gio
     if command_exists gio; then
         gio set -t boolean "$DESKTOP_PATH/$filename" metadata::trusted true 2>/dev/null
