@@ -15,7 +15,7 @@ command_exists() {
 }
 
 # --- Define Version Number ---
-CURRENT_VERSION="v1.0.0"
+CURRENT_VERSION="v1.0.1"
 
 # --- Define Scripts Directory ---
 SCRIPTS_DIR="/opt/nessusdesktop"
